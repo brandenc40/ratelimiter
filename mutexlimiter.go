@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-// compile time interface validation
+// compile time interface validation.
 var _ RateLimiter = (*mutexLimiter)(nil)
 
 func newMutexLimiter(config config) RateLimiter {
 	return &mutexLimiter{
 		nextCall:        time.Now(),
-		durBetweenCalls: time.Duration(config.durationBetweenCalls),
+		durBetweenCalls: config.durationBetweenCalls,
 		maxQueue:        config.maxQueue,
 	}
 }
@@ -45,7 +45,7 @@ func (r *mutexLimiter) Wait() error {
 	// wait fur mutex
 	r.mu.Lock()
 
-	// remove from queue since the lock was aquired
+	// remove from queue since the lock was acquired
 	r.dequeue()
 
 	now := time.Now()
@@ -62,6 +62,7 @@ func (r *mutexLimiter) Wait() error {
 		r.nextCall = now.Add(r.durBetweenCalls)
 	}
 
+	// free mutex for next call
 	r.mu.Unlock()
 	return nil
 }

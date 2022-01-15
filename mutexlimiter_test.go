@@ -117,7 +117,7 @@ func BenchmarkRateLimiter_Wait_NoLimiter(b *testing.B) {
 	})
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		r.Wait()
+		_ = r.Wait()
 	}
 }
 
@@ -128,7 +128,7 @@ func BenchmarkRateLimiter_Wait_WithQueueLimit(b *testing.B) {
 	})
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		r.Wait()
+		_ = r.Wait()
 	}
 }
 
@@ -139,7 +139,7 @@ func BenchmarkRateLimiter_Wait_NoQueueLimit(b *testing.B) {
 	})
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		r.Wait()
+		_ = r.Wait()
 	}
 }
 

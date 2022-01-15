@@ -2,28 +2,30 @@ package ratelimiter_test
 
 import (
 	"fmt"
+	"runtime"
+	"sync"
 	"time"
 
 	"github.com/brandenc40/ratelimiter"
 )
 
-func Example() {
-	rl := ratelimiter.New(
-		10*time.Millisecond,               // 10ms between calls (100 rps)
-		ratelimiter.WithMaxQueueSize(100), // max of 100 requests queued up before failure
-	)
+func ExampleRateLimiter() {
+	rl := ratelimiter.New(10 * time.Millisecond) // 10ms between calls (100 rps)
 
 	var (
 		start    = time.Now()
 		nSuccess = 0
 		nError   = 0
 	)
+
 	for i := 0; i < 100; i++ {
 		if err := rl.Wait(); err != nil {
+			// queue is not limited so this should never return an error
 			nError++
-		} else {
-			nSuccess++
+			continue
 		}
+		nSuccess++
+
 	}
 
 	elapsed := time.Since(start)
@@ -37,4 +39,46 @@ func Example() {
 	// (timeElapsed >= 990ms) == true
 	// nSuccess: 100
 	// nError: 0
+}
+
+func ExampleWithMaxQueueSize() {
+	rl := ratelimiter.New(
+		1*time.Second,                   // 1 request per second
+		ratelimiter.WithMaxQueueSize(1), // only one can be queued at a time
+	)
+
+	// first call is executed immediately and not useful for this example
+	_ = rl.Wait()
+
+	// ensure a single proc handles the goroutines
+	runtime.GOMAXPROCS(1)
+
+	startTime := time.Now()
+
+	var wg sync.WaitGroup
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+
+		go func(i int) {
+			defer wg.Done()
+			if err := rl.Wait(); err != nil {
+				fmt.Println(i, err)
+				return
+			}
+			fmt.Println(i, "sucess", time.Since(startTime).Round(time.Second))
+
+		}(i)
+
+		// quick sleep to ensure goroutines are started in order
+		time.Sleep(time.Nanosecond)
+	}
+
+	wg.Wait()
+
+	// Output:
+	// 2 ratelimiter: queue is full
+	// 3 ratelimiter: queue is full
+	// 4 ratelimiter: queue is full
+	// 0 sucess 1s
+	// 1 sucess 2s
 }

@@ -15,11 +15,12 @@ var (
 	ErrQueueFull = errors.New("ratelimiter: queue is full")
 )
 
-// RateLimiter provides functionality to block until ready to ensure a rate limit is not exceeded
+// RateLimiter provides functionality to block until ready to ensure a rate limit is not exceeded.
 type RateLimiter interface {
 	// Wait blocks until the next call is ready based on the minimum time between calls.
 	Wait() error
-	// NumQueued returns the current number of queued requests. If WithMaxQueueSize is not set, the result will always be 0.
+	// NumQueued returns the current number of queued requests. If WithMaxQueueSize is not set,
+	// the result will always be 0.
 	NumQueued() uint32
 }
 
@@ -40,7 +41,7 @@ func New(minDuration time.Duration, options ...Option) RateLimiter {
 	return newMutexLimiter(cfg)
 }
 
-// Option to configure the rate limiter
+// Option to configure the rate limiter.
 type Option interface {
 	apply(*config)
 }
