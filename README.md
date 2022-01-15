@@ -26,6 +26,13 @@ type RateLimiter interface {
     // NumQueued returns the current number of queued requests. If WithMaxQueueSize is not set, the result will always be 0.
     NumQueued() uint32
 }
+
+// New builds a new rate limiter used to ensure calls adhere to a minimum duration between calls.
+func New(minDuration time.Duration, options ...Option) RateLimiter
+
+// WithMaxQueueSize sets the maximum number of requests that can be queued up. If the queue
+// limit is reached, ErrQueueFull will be returned when Wait is called.
+func WithMaxQueueSize(maxQueue uint32) Option
 ```
 
 ## Usage Example
