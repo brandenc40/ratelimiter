@@ -29,7 +29,7 @@ func Example() {
 	elapsed := time.Since(start)
 
 	// 10ms each for 100 requrests == 990ms total (first request is 0ms)
-	fmt.Printf("(timeElapsed >= 990ms) == %v\n", elapsed.Milliseconds() >= 950)
+	fmt.Printf("(timeElapsed >= 990ms) == %v\n", elapsed.Milliseconds() >= 990)
 	fmt.Println("nSuccess:", nSuccess)
 	fmt.Println("nError:", nError)
 
