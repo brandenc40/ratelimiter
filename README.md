@@ -1,4 +1,4 @@
-# Ratelimiter
+# Ratelimiter [![Go Reference](https://pkg.go.dev/badge/github.com/brandenc40/ratelimiter#example-package.svg)](https://pkg.go.dev/github.com/brandenc40/ratelimiter#example-package)
 
 Rate limiter used to ensure a minimum duration between executions. 
 
