@@ -3,7 +3,7 @@
 Rate limiter used to ensure a minimum duration between executions. 
 
 Additionally supports the optional limit of max queue size. This can be used to ensure 
-programs don't bottleneck due to having too many requests queued by the ratelimiter at a given time.
+programs don't bottleneck due to having too many requests queued by the ratelimiter at any given time.
 
 
 ## Package Interface
