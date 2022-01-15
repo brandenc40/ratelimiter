@@ -62,10 +62,10 @@ func ExampleWithMaxQueueSize() {
 		go func(i int) {
 			defer wg.Done()
 			if err := rl.Wait(); err != nil {
-				fmt.Println(i, err)
+				fmt.Println(i, "err:", err)
 				return
 			}
-			fmt.Println(i, "sucess", time.Since(startTime).Round(time.Second))
+			fmt.Println(i, "success", time.Since(startTime).Round(time.Second))
 
 		}(i)
 
@@ -76,9 +76,9 @@ func ExampleWithMaxQueueSize() {
 	wg.Wait()
 
 	// Output:
-	// 2 ratelimiter: queue is full
-	// 3 ratelimiter: queue is full
-	// 4 ratelimiter: queue is full
-	// 0 sucess 1s
-	// 1 sucess 2s
+	// 2 err: ratelimiter: queue is full
+	// 3 err: ratelimiter: queue is full
+	// 4 err: ratelimiter: queue is full
+	// 0 success 1s
+	// 1 success 2s
 }

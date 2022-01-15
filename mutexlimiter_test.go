@@ -12,7 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func TestRateLimiter_Wait(t *testing.T) {
+func TestMutexLimiter_Wait(t *testing.T) {
 	r := newMutexLimiter(config{
 		durationBetweenCalls: time.Millisecond / 2,
 		maxQueue:             0,
@@ -51,7 +51,7 @@ func TestRateLimiter_Wait(t *testing.T) {
 	})
 }
 
-func TestRateLimiter_Wait_NoLimit(t *testing.T) {
+func TestMutexLimiter_Wait_NoLimit(t *testing.T) {
 	r := newMutexLimiter(config{
 		durationBetweenCalls: NoLimit,
 		maxQueue:             0,
@@ -75,7 +75,7 @@ func TestRateLimiter_Wait_NoLimit(t *testing.T) {
 
 }
 
-func TestRateLimiter_Wait_QueueError(t *testing.T) {
+func TestMutexLimiter_Wait_QueueError(t *testing.T) {
 	r := newMutexLimiter(config{
 		durationBetweenCalls: time.Millisecond / 2,
 		maxQueue:             10,
@@ -92,7 +92,7 @@ func TestRateLimiter_Wait_QueueError(t *testing.T) {
 	}
 }
 
-func TestRateLimiter_Wait_QueueNoError(t *testing.T) {
+func TestMutexLimiter_Wait_QueueNoError(t *testing.T) {
 	r := newMutexLimiter(config{
 		durationBetweenCalls: time.Millisecond / 2,
 		maxQueue:             20,
@@ -110,7 +110,7 @@ func TestRateLimiter_Wait_QueueNoError(t *testing.T) {
 	}
 }
 
-func BenchmarkRateLimiter_Wait_NoLimiter(b *testing.B) {
+func BenchmarkMutexLimiter_Wait_NoLimiter(b *testing.B) {
 	r := newMutexLimiter(config{
 		durationBetweenCalls: NoLimit,
 		maxQueue:             math.MaxUint32,
@@ -121,7 +121,7 @@ func BenchmarkRateLimiter_Wait_NoLimiter(b *testing.B) {
 	}
 }
 
-func BenchmarkRateLimiter_Wait_WithQueueLimit(b *testing.B) {
+func BenchmarkMutexLimiter_Wait_WithQueueLimit(b *testing.B) {
 	r := newMutexLimiter(config{
 		durationBetweenCalls: time.Nanosecond,
 		maxQueue:             math.MaxUint32,
@@ -132,7 +132,7 @@ func BenchmarkRateLimiter_Wait_WithQueueLimit(b *testing.B) {
 	}
 }
 
-func BenchmarkRateLimiter_Wait_NoQueueLimit(b *testing.B) {
+func BenchmarkMutexLimiter_Wait_NoQueueLimit(b *testing.B) {
 	r := newMutexLimiter(config{
 		durationBetweenCalls: time.Nanosecond,
 		maxQueue:             0,
@@ -144,7 +144,8 @@ func BenchmarkRateLimiter_Wait_NoQueueLimit(b *testing.B) {
 }
 
 // test case inspired by https://github.com/uber-go/ratelimit
-func BenchmarkRateLimiter(b *testing.B) {
+// used to ensure this package is comparable in speed.
+func BenchmarkMutexLimiter(b *testing.B) {
 	b.StopTimer()
 	b.ResetTimer()
 	for _, procs := range []int{16} {
@@ -183,8 +184,8 @@ func BenchmarkRateLimiter(b *testing.B) {
 	}
 }
 
-func runner(b *testing.B, name string, procs int, ng int, limiter RateLimiter) bool {
-	return b.Run(fmt.Sprintf("type:%s-procs:%d-goroutines:%d", name, procs, ng), func(b *testing.B) {
+func runner(b *testing.B, name string, procs int, ng int, limiter RateLimiter) {
+	b.Run(fmt.Sprintf("type:%s-procs:%d-goroutines:%d", name, procs, ng), func(b *testing.B) {
 		var wg sync.WaitGroup
 		var trigger int32
 		atomic.StoreInt32(&trigger, 1)

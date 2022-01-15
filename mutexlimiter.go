@@ -12,9 +12,11 @@ var _ RateLimiter = (*mutexLimiter)(nil)
 
 func newMutexLimiter(config config) RateLimiter {
 	return &mutexLimiter{
+		mu:              sync.Mutex{},
 		nextCall:        time.Now(),
 		durBetweenCalls: config.durationBetweenCalls,
 		maxQueue:        config.maxQueue,
+		queued:          0,
 	}
 }
 
@@ -64,6 +66,7 @@ func (r *mutexLimiter) Wait() error {
 
 	// free mutex for next call
 	r.mu.Unlock()
+
 	return nil
 }
 
@@ -87,6 +90,7 @@ func (r *mutexLimiter) enqueue() error {
 		// start over and attempt again.
 		swapped = atomic.CompareAndSwapUint32(&r.queued, curQueued, curQueued+1)
 	}
+
 	return nil
 }
 

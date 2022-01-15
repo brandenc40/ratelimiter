@@ -5,15 +5,11 @@ import (
 	"time"
 )
 
-const (
-	// NoLimit can be used as the minDuration arg value to NewRateLimiter if no limiting is required.
-	NoLimit = time.Duration(-1)
-)
+// NoLimit can be used as the minDuration arg value to New if no limiting is required.
+const NoLimit = time.Duration(-1)
 
-var (
-	// ErrQueueFull is returned with the queue limit set by WithMaxQueueSize is exceeded.
-	ErrQueueFull = errors.New("ratelimiter: queue is full")
-)
+// ErrQueueFull is returned with the queue limit set by WithMaxQueueSize is exceeded.
+var ErrQueueFull = errors.New("ratelimiter: queue is full")
 
 // RateLimiter provides functionality to block until ready to ensure a rate limit is not exceeded.
 type RateLimiter interface {
@@ -35,9 +31,11 @@ func New(minDuration time.Duration, options ...Option) RateLimiter {
 		durationBetweenCalls: minDuration,
 		maxQueue:             0,
 	}
+
 	for _, opt := range options {
 		opt.apply(&cfg)
 	}
+
 	return newMutexLimiter(cfg)
 }
 
