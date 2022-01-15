@@ -27,7 +27,7 @@ type mutexLimiter struct {
 	queued          uint32
 }
 
-func (r *mutexLimiter) QueueSize() uint32 {
+func (r *mutexLimiter) NumQueued() uint32 {
 	return atomic.LoadUint32(&r.queued)
 }
 
@@ -44,7 +44,6 @@ func (r *mutexLimiter) Wait() error {
 
 	// wait fur mutex
 	r.mu.Lock()
-	defer r.mu.Unlock()
 
 	// remove from queue since the lock was aquired
 	r.dequeue()
@@ -62,6 +61,8 @@ func (r *mutexLimiter) Wait() error {
 	} else {
 		r.nextCall = now.Add(r.durBetweenCalls)
 	}
+
+	r.mu.Unlock()
 	return nil
 }
 
@@ -73,7 +74,7 @@ func (r *mutexLimiter) enqueue() error {
 
 	for swapped := false; !swapped; {
 		// atomically read the current queue size
-		curQueued := atomic.LoadUint32(&r.queued)
+		curQueued := r.NumQueued()
 
 		// if queue is full, remove from queue and return error
 		if curQueued == math.MaxUint32 || curQueued >= r.maxQueue {

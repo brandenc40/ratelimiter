@@ -1,10 +1,4 @@
-# Ratelimiter
-
-
-## Example
-
-```go
-package main
+package ratelimiter_test
 
 import (
 	"time"
@@ -12,7 +6,7 @@ import (
 	"github.com/brandenc40/ratelimiter"
 )
 
-func main() {
+func Example() {
 	rl := ratelimiter.New(
 		10*time.Millisecond,               // 10ms between calls (100 rps)
 		ratelimiter.WithMaxQueueSize(100), // max of 100 requests queued up before failure
@@ -25,4 +19,3 @@ func main() {
 		// do some rate limited functionality
 	}
 }
-```

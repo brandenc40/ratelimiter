@@ -19,8 +19,8 @@ var (
 type RateLimiter interface {
 	// Wait blocks until the next call is ready based on the minimum time between calls.
 	Wait() error
-	// QueueSize returns the current number of queued requests. If WithMaxQueueSize is not set, the result will always be 0.
-	QueueSize() uint32
+	// NumQueued returns the current number of queued requests. If WithMaxQueueSize is not set, the result will always be 0.
+	NumQueued() uint32
 }
 
 type config struct {
@@ -28,8 +28,8 @@ type config struct {
 	maxQueue             uint32
 }
 
-// NewRateLimiter builds a new rate limiter used to ensure calls adhere to a minimum duration between calls.
-func NewRateLimiter(minDuration time.Duration, options ...Option) RateLimiter {
+// New builds a new rate limiter used to ensure calls adhere to a minimum duration between calls.
+func New(minDuration time.Duration, options ...Option) RateLimiter {
 	cfg := config{
 		durationBetweenCalls: minDuration,
 		maxQueue:             0,
