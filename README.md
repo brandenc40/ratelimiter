@@ -23,7 +23,7 @@ type RateLimiter interface {
     NumQueued() uint32
 }
 
-// New builds a new rate limiter used to ensure calls adhere to a minimum duration between calls.
+// New builds a new RateLimiter used to ensure calls adhere to a minimum duration between calls.
 func New(minDuration time.Duration, options ...Option) RateLimiter
 
 // WithMaxQueueSize sets the maximum number of requests that can be queued up. If the queue
