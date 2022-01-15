@@ -15,7 +15,7 @@ const NoLimit = time.Duration(-1)
 // ErrQueueFull is returned with the queue limit set by WithMaxQueueSize is exceeded.
 var ErrQueueFull = errors.New("ratelimiter: queue is full")
 
-// RateLimiter provides functionality to block until ready to ensure a rate limit is not exceeded
+// RateLimiter provides functionality to block until ready to ensure a rate limit is not exceeded.
 type RateLimiter interface {
     // Wait blocks until the next call is ready based on the minimum time between calls.
     Wait() error
