@@ -52,7 +52,7 @@ func main() {
         if err := rl.Wait(); err != nil {
             // handle err
         }
-    // do some rate limited functionality
+        // do some rate limited functionality
     }
 }
 ```
