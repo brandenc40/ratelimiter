@@ -1,11 +1,8 @@
 package ratelimiter
 
 import (
-	"fmt"
 	"math"
 	"runtime"
-	"sync"
-	"sync/atomic"
 	"testing"
 	"time"
 
@@ -58,7 +55,7 @@ func TestMutexLimiter_Wait_NoLimit(t *testing.T) {
 	})
 	start := time.Now()
 	var eg errgroup.Group
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 800; i++ {
 		eg.Go(func() error {
 			return r.Wait()
 		})
@@ -144,78 +141,78 @@ func BenchmarkMutexLimiter_Wait_NoQueueLimit(b *testing.B) {
 }
 
 // test case inspired by https://github.com/uber-go/ratelimit
-// used to ensure this package is comparable in speed.
-func BenchmarkMutexLimiter(b *testing.B) {
-	b.StopTimer()
-	b.ResetTimer()
-	for _, procs := range []int{16} {
-		runtime.GOMAXPROCS(procs)
-		for name, limiter := range map[string]RateLimiter{
-			"mutex": newMutexLimiter(config{
-				durationBetweenCalls: time.Nanosecond,
-				maxQueue:             65536,
-			}),
-		} {
-			for ng := 1; ng < 16; ng++ {
-				runner(b, name, procs, ng, limiter)
-			}
-			for ng := 16; ng < 128; ng += 8 {
-				runner(b, name, procs, ng, limiter)
-			}
-			for ng := 128; ng < 512; ng += 16 {
-				runner(b, name, procs, ng, limiter)
-			}
-			for ng := 512; ng < 1024; ng += 32 {
-				runner(b, name, procs, ng, limiter)
-			}
-			for ng := 1024; ng < 2048; ng += 64 {
-				runner(b, name, procs, ng, limiter)
-			}
-			for ng := 2048; ng < 4096; ng += 128 {
-				runner(b, name, procs, ng, limiter)
-			}
-			for ng := 4096; ng < 16384; ng += 512 {
-				runner(b, name, procs, ng, limiter)
-			}
-			for ng := 16384; ng < 65536; ng += 2048 {
-				runner(b, name, procs, ng, limiter)
-			}
-		}
-	}
-}
+// // used to ensure this package is comparable in speed.
+// func BenchmarkMutexLimiter(b *testing.B) {
+// 	b.StopTimer()
+// 	b.ResetTimer()
+// 	for _, procs := range []int{16} {
+// 		runtime.GOMAXPROCS(procs)
+// 		for name, limiter := range map[string]RateLimiter{
+// 			"mutex": newMutexLimiter(config{
+// 				durationBetweenCalls: time.Nanosecond,
+// 				maxQueue:             65536,
+// 			}),
+// 		} {
+// 			for ng := 1; ng < 16; ng++ {
+// 				runner(b, name, procs, ng, limiter)
+// 			}
+// 			for ng := 16; ng < 128; ng += 8 {
+// 				runner(b, name, procs, ng, limiter)
+// 			}
+// 			for ng := 128; ng < 512; ng += 16 {
+// 				runner(b, name, procs, ng, limiter)
+// 			}
+// 			for ng := 512; ng < 1024; ng += 32 {
+// 				runner(b, name, procs, ng, limiter)
+// 			}
+// 			for ng := 1024; ng < 2048; ng += 64 {
+// 				runner(b, name, procs, ng, limiter)
+// 			}
+// 			for ng := 2048; ng < 4096; ng += 128 {
+// 				runner(b, name, procs, ng, limiter)
+// 			}
+// 			for ng := 4096; ng < 16384; ng += 512 {
+// 				runner(b, name, procs, ng, limiter)
+// 			}
+// 			for ng := 16384; ng < 65536; ng += 2048 {
+// 				runner(b, name, procs, ng, limiter)
+// 			}
+// 		}
+// 	}
+// }
 
-func runner(b *testing.B, name string, procs int, ng int, limiter RateLimiter) {
-	b.Run(fmt.Sprintf("type:%s-procs:%d-goroutines:%d", name, procs, ng), func(b *testing.B) {
-		var wg sync.WaitGroup
-		var trigger int32
-		atomic.StoreInt32(&trigger, 1)
-		n := b.N
-		batchSize := n / ng
-		if batchSize == 0 {
-			batchSize = n
-		}
-		for n > 0 {
-			wg.Add(1)
-			batch := min(n, batchSize)
-			n -= batch
-			go func(quota int) {
-				for atomic.LoadInt32(&trigger) == 1 {
-					// wait until trigger is switched to 1
-					runtime.Gosched()
-				}
-				for i := 0; i < quota; i++ {
-					_ = limiter.Wait()
-				}
-				wg.Done()
-			}(batch)
-		}
+// func runner(b *testing.B, name string, procs int, ng int, limiter RateLimiter) {
+// 	b.Run(fmt.Sprintf("type:%s-procs:%d-goroutines:%d", name, procs, ng), func(b *testing.B) {
+// 		var wg sync.WaitGroup
+// 		var trigger int32
+// 		atomic.StoreInt32(&trigger, 1)
+// 		n := b.N
+// 		batchSize := n / ng
+// 		if batchSize == 0 {
+// 			batchSize = n
+// 		}
+// 		for n > 0 {
+// 			wg.Add(1)
+// 			batch := min(n, batchSize)
+// 			n -= batch
+// 			go func(quota int) {
+// 				for atomic.LoadInt32(&trigger) == 1 {
+// 					// wait until trigger is switched to 1
+// 					runtime.Gosched()
+// 				}
+// 				for i := 0; i < quota; i++ {
+// 					_ = limiter.Wait()
+// 				}
+// 				wg.Done()
+// 			}(batch)
+// 		}
 
-		b.StartTimer()
-		atomic.CompareAndSwapInt32(&trigger, 1, 0)
-		wg.Wait()
-		b.StopTimer()
-	})
-}
+// 		b.StartTimer()
+// 		atomic.CompareAndSwapInt32(&trigger, 1, 0)
+// 		wg.Wait()
+// 		b.StopTimer()
+// 	})
+// }
 
 func min(a, b int) int {
 	if a < b {

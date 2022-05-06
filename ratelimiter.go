@@ -39,6 +39,18 @@ func New(minDuration time.Duration, options ...Option) RateLimiter {
 	return newMutexLimiter(cfg)
 }
 
+// PerDuration is a helper function for determining the min duration between calls with a common requests per
+// duration syntax.
+//
+// e.g. for 100qps:
+//	ratelimiter.New(
+//		ratelimiter.PerDuration(100, time.Second)
+//	)
+//
+func PerDuration(n int, duration time.Duration) time.Duration {
+	return duration / time.Duration(n)
+}
+
 // Option to configure the rate limiter.
 type Option interface {
 	apply(*config)

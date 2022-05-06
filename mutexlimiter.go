@@ -101,5 +101,5 @@ func (r *mutexLimiter) dequeue() {
 	}
 
 	// decrement the queue count
-	atomic.AddUint32(&r.queued, ^uint32(0))
+	atomic.AddUint32(&r.queued, math.MaxUint32)
 }

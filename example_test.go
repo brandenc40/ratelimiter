@@ -6,11 +6,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/brandenc40/ratelimiter"
+	rl "github.com/brandenc40/ratelimiter"
 )
 
 func ExampleRateLimiter() {
-	rl := ratelimiter.New(10 * time.Millisecond) // 10ms between calls (100 rps)
+	limiter := rl.New(
+		// 10ms between calls (100 rps)
+		rl.PerDuration(100, time.Second),
+	)
 
 	var (
 		start    = time.Now()
@@ -19,7 +22,7 @@ func ExampleRateLimiter() {
 	)
 
 	for i := 0; i < 100; i++ {
-		if err := rl.Wait(); err != nil {
+		if err := limiter.Wait(); err != nil {
 			// queue is not limited so this should never return an error
 			nError++
 			continue
@@ -42,13 +45,15 @@ func ExampleRateLimiter() {
 }
 
 func ExampleWithMaxQueueSize() {
-	rl := ratelimiter.New(
-		1*time.Second,                   // 1 request per second
-		ratelimiter.WithMaxQueueSize(1), // only one can be queued at a time
+	limiter := rl.New(
+		// 1 request per second
+		rl.PerDuration(1, time.Second),
+		// only one can be queued at a time
+		rl.WithMaxQueueSize(1),
 	)
 
 	// first call is executed immediately and not useful for this example
-	_ = rl.Wait()
+	_ = limiter.Wait()
 
 	// ensure a single proc handles the goroutines
 	runtime.GOMAXPROCS(1)
@@ -61,7 +66,7 @@ func ExampleWithMaxQueueSize() {
 
 		go func(i int) {
 			defer wg.Done()
-			if err := rl.Wait(); err != nil {
+			if err := limiter.Wait(); err != nil {
 				fmt.Println(i, "err:", err)
 				return
 			}
